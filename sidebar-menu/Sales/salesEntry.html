@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], input[type="date"] {
+            width: 200px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .button-3d {
+            background: linear-gradient(145deg, #2980b9, #2980b9);
+            box-shadow: 5px 5px 10px #d1d5db, -5px -5px 10px #ffffff;
+            transition: transform 0.2s ease;
+            font-size: 16px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .button-3d:hover {
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <div id="salesinvoice" class="content-section active">
+        <h2>Sales Invoice</h2>
+    
+        <form action="submit_sales.php" method="post">
+            
+            <button id="homeButton" class="button-3d px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 shadow-lg">
+                Home</button>
+        <div class="form-group">
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required>
+        </div>
+ 
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+
+        <table>
+            <tr>
+                <th>Item</th>
+                <th>Ouantity</th>
+            </tr>
+            <tr>
+                <td>12kg Load</td>
+                <td><input type="number" name="12kg_load"></td>
+            </tr>
+            <tr>
+                <td>17kg Load</td>
+                <td><input type="number" name="17kg_load"></td>
+            </tr>
+            <tr>
+                <td>12kg Empty Received</td>
+                <td><input type="number" name="12kg_empty_received"></td>
+            </tr>
+            <tr>
+                <td>17kg Empty Received</td>
+                <td><input type="number" name="17kg_empty_received"></td>
+            </tr>
+            <tr>
+                <td>SRG</td>
+                <td><input type="number" name="srg"></td>
+            </tr>
+            <tr>
+                <td>Adap</td>
+                <td><input type="number" name="adap"></td>
+            </tr>
+            <tr>
+                <td>Tube</td>
+                <td><input type="number" name="tube"></td>
+            </tr>
+            <tr>
+                <td>Stove</td>
+                <td><input type="number" name="stove"></td>
+            </tr>
+            <tr>
+                <td>Lighter</td>
+                <td><input type="number" name="lighter"></td>
+            </tr>
+        </table><br>
+        
+        <div class="form-group">
+            <label for="total_amount">Total Amount:</label>
+            <input type="number" id="total_amount" name="total_amount" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="deposit">Deposit:</label>
+            <input type="number" id="deposit" name="deposit">
+        </div>
+        
+        <div class="form-group">
+            <label for="amount_paid">Amount Paid:</label>
+            <input type="number" id="amount_paid" name="amount_paid" required>
+        </div>
+
+        <div class="form-group">
+            <label for="od_collected">Outstanding Collected:</label>
+            <input type="number" id="od_collected" name="od_collected" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="amount_od">Amount OD:</label>
+            <input type="number" id="amount_od" name="amount_od" readonly>
+        </div>
+        
+        
+            <!-- Your form fields go here -->
+            <button type="submit" class="button">Load Data</button>
+           
+        </form>
+    </div>
+
+    <script>
+        // Dynamically update Amount OD when Total Amount or Amount Paid changes
+        document.getElementById('total_amount').addEventListener('input', calculateAmountOD);
+        document.getElementById('amount_paid').addEventListener('input', calculateAmountOD);
+
+        function calculateAmountOD() {
+            const totalAmount = Number(document.getElementById('total_amount').value) || 0;
+            const amountPaid = Number(document.getElementById('amount_paid').value) || 0;
+            const amountOD = totalAmount - amountPaid;
+            document.getElementById('amount_od').value = amountOD;
+            document.getElementById('amount_od_preview').value = amountOD;
+        }
+
+    function loadData() {
+    const date = document.getElementById('date').value;
+    const name = document.getElementById('name').value;
+    const load12kg = document.querySelector('input[name="12kg_load"]').value;
+    const empty12kg = document.querySelector('input[name="12kg_empty_received"]').value;
+    const load17kg = document.querySelector('input[name="17kg_load"]').value;
+    const empty17kg = document.querySelector('input[name="17kg_empty_received"]').value;
+    const srg = document.querySelector('input[name="srg"]').value;
+    const adap = document.querySelector('input[name="adap"]').value;
+    const stove = document.querySelector('input[name="stove"]').value;
+    const lighter = document.querySelector('input[name="lighter"]').value;
+    const tube = document.querySelector('input[name="tube"]').value;
+    const totalAmount = document.getElementById('total_amount').value;
+    const deposit = document.getElementById('deposit').value;
+    const amountPaid = document.getElementById('amount_paid').value;
+    const od_collected = document.getElementById('od_collected').value;
+    const amountOD = document.getElementById('amount_od').value;
+
+    const salesEntry = {
+        date, name, load12kg, empty12kg, load17kg, empty17kg, srg, adap, stove, lighter, tube,
+        totalAmount, deposit, amountPaid, od_collected, amountOD
+    };
+
+    let salesData = JSON.parse(localStorage.getItem('salesData')) || [];
+    salesData.push(salesEntry);
+    localStorage.setItem('salesData', JSON.stringify(salesData));
+
+    alert('Data saved successfully!');
+    document.getElementById('invoiceForm').reset();
+}
+document.getElementById('homeButton').onclick = function() {
+            window.location.href = 'index.html';  // Redirect to index.html
+        };
+
+</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Purchase Entry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg max-w-4xl">
+        <h2 class="text-2xl font-bold text-center text-green-600 mb-8">New Purchase Entry</h2>
+        <form id="purchaseForm" action="submit_purchase.php" method="POST">
+            <button id="homeButton" class="button-3d px-4 py-2 rounded-md bg-indigo-500 text-white hover:bg-indigo-600 shadow-lg">
+                Home</button>
+            
+            <!-- First row: Purchase Date, Purchase Bill -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="purchaseDate" class="block font-semibold mb-2">Purchase Date:</label>
+                    <input type="date" id="purchaseDate" name="purchaseDate" class="w-full p-3 border rounded" required>
+                </div>
+                <div>
+                    <label for="purchaseBill" class="block font-semibold mb-2">Purchase Bill:</label>
+                    <input type="text" id="purchaseBill" name="purchaseBill" class="w-full p-3 border rounded" required>
+                </div>
+            </div>
+
+            <!-- Second row: 12kg Load, 12kg Given -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="itemDetails" class="block font-semibold mb-2">12kg Load:</label>
+                    <input type="number" id="itemDetails" name="itemDetails" class="w-full p-3 border rounded" required>
+                </div>
+                <div>
+                    <label for="given12kg" class="block font-semibold mb-2">12kg Given:</label>
+                    <input type="number" id="given12kg" name="given12kg" class="w-full p-3 border rounded" required>
+                </div>
+            </div>
+
+            <!-- Third row: 17kg Load, 17kg Given -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="load17kg" class="block font-semibold mb-2">17kg Load:</label>
+                    <input type="number" id="load17kg" name="load17kg" class="w-full p-3 border rounded" required>
+                </div>
+                <div>
+                    <label for="given17kg" class="block font-semibold mb-2">17kg Given:</label>
+                    <input type="number" id="given17kg" name="given17kg" class="w-full p-3 border rounded" required>
+                </div>
+            </div>
+
+            <!-- Fourth row: 12kg Amount, 17kg Amount -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="amount12kg" class="block font-semibold mb-2">12kg Amount:</label>
+                    <input type="number" id="amount12kg" name="amount12kg" step="0.01" class="w-full p-3 border rounded" required>
+                </div>
+                <div>
+                    <label for="amount17kg" class="block font-semibold mb-2">17kg Amount:</label>
+                    <input type="number" id="amount17kg" name="amount17kg" step="0.01" class="w-full p-3 border rounded" required>
+                </div>
+            </div>
+
+            <!-- Fifth row: Total Purchase Value (Automatically Calculated) -->
+            <div class="grid grid-cols-1 mb-6">
+                <div>
+                    <label for="totalPurchaseValue" class="block font-semibold mb-2">Total Purchase Value:</label>
+                    <input type="number" id="totalPurchaseValue" name="totalPurchaseValue" step="0.01" class="w-full p-3 border rounded bg-gray-100" readonly>
+                </div>
+            </div>
+
+            <!-- Submit button -->
+            <div>
+                <button type="submit" class="button-3d px-4 py-2 rounded-md bg-indigo-500 text-white hover:bg-indigo-600 shadow-lg">
+                    Add Purchase
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Function to calculate the total purchase value dynamically
+        function calculateTotal() {
+            const amount12kg = parseFloat(document.getElementById('amount12kg').value) || 0;
+            const amount17kg = parseFloat(document.getElementById('amount17kg').value) || 0;
+            const total = amount12kg + amount17kg;
+            document.getElementById('totalPurchaseValue').value = total.toFixed(2);
+        }
+
+        // Attach the calculation function to the input fields
+        document.getElementById('amount12kg').addEventListener('input', calculateTotal);
+        document.getElementById('amount17kg').addEventListener('input', calculateTotal);
+        
+        // Handle form submission with JavaScript fetch as before
+        document.getElementById('purchaseForm').onsubmit = function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('submit_purchase.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Purchase added successfully!');
+                    window.location.reload();
+                } else {
+                    alert('Failed to add the purchase.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        };
+
+        document.getElementById('homeButton').onclick = function() {
+            window.location.href = 'index.html';  // Redirect to index.html
+};
+</script>
+</body>
+</html>

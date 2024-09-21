@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datewise Sales Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+            overflow-x: auto;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: inline-block;
+            width: 100px;
+        }
+        .form-group input {
+            padding: 5px;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-group button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #2980b9;
+        }
+        .hidden {
+            display: none;
+        }
+        .options {
+            margin-top: 20px;
+        }
+        .options button {
+            margin-right: 10px;
+            padding: 5px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .copy { background-color: #6c757d; color: white; }
+        .excel { background-color: #20c997; color: white; }
+        .pdf { background-color: #dc3545; color: white; }
+        .print { background-color: #6610f2; color: white; }
+        .search-container {
+            text-align: right;
+            margin-top: 20px;
+        }
+        .search-container input {
+            padding: 5px;
+            width: 200px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .pagination {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .pagination button {
+            margin-left: 5px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .pagination button.active {
+            background-color: #0056b3;
+        }
+    </style>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="container" id="dateSelection">
+        <h2>Datewise Sales Report</h2>
+        <div class="form-group">
+            <label for="fromDate">From:</label>
+            <input type="date" id="fromDate">
+            <label for="toDate">To:</label>
+            <input type="date" id="toDate">
+            <button onclick="getReport()">Get Report</button>
+            <button id="homeButton" class="button-3d px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 shadow-lg">
+                   Home</button>
+        </div>
+    </div>
+
+    <div class="container hidden" id="reportPage">
+        <h2>Datewise Sales Report</h2>
+        
+        <div class="options">
+            <button class="copy" onclick="copyTable()">Copy</button>
+            <button class="excel" onclick="exportExcel()">Excel</button>
+            <button class="pdf" onclick="exportPDF()">PDF</button>
+            <button class="print" onclick="window.print()">Print</button>
+            <button id="homeButton" class="button-3d px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 shadow-lg">
+                   Home</button>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Search by Name..." oninput="searchTable()">
+        </div>
+        
+        <table id="salesTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>12kg Load</th>
+                    <th>12kg Empty</th>
+                    <th>17kg Load</th>
+                    <th>17kg Empty</th>
+                    <th>SRG</th>
+                    <th>Adap</th>
+                    <th>Stove</th>
+                    <th>Lighter</th>
+                    <th>Tube</th>
+                    <th>Total Amount</th>
+                    <th>Deposit</th>
+                    <th>Amount Paid</th>
+                    <th>Amount OD</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be dynamically inserted here -->
+            </tbody>
+        </table>
+        
+        <div class="pagination">
+            <button onclick="prevPage()">Previous</button>
+            <span id="page-info">Page 1</span>
+            <button onclick="nextPage()">Next</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let salesData = [];
+
+        function getReport() {
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+
+            fetch(`fetch_sales_report.php?fromDate=${fromDate}&toDate=${toDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    salesData = data;
+                    currentPage = 1;
+                    displayTable();
+                    document.getElementById('dateSelection').classList.add('hidden');
+                    document.getElementById('reportPage').classList.remove('hidden');
+                })
+                .catch(error => console.error('Error fetching sales data:', error));
+        }
+
+        document.getElementById('homeButton').onclick = function() {
+            window.location.href = 'index.html';  // Redirect to index.html
+        };
+
+        function formatDate(dateString) {
+            const [year, month, day] = dateString.split('-');
+            return `${day}-${month}-${year}`;
+        }
+
+        function calculateTotals(data) {
+            const totals = {
+                load12kg: 0,
+                empty12kg: 0,
+                load17kg: 0,
+                empty17kg: 0,
+                srg: 0,
+                adap: 0,
+                stove: 0,
+                lighter: 0,
+                tube: 0,
+                total_amount: 0,
+                deposit: 0,
+                amount_paid: 0,
+                amount_od: 0,
+            };
+
+            data.forEach(row => {
+                totals.load12kg += parseFloat(row.load12kg) || 0;
+                totals.empty12kg += parseFloat(row.empty12kg) || 0;
+                totals.load17kg += parseFloat(row.load17kg) || 0;
+                totals.empty17kg += parseFloat(row.empty17kg) || 0;
+                totals.srg += parseFloat(row.srg) || 0;
+                totals.adap += parseFloat(row.adap) || 0;
+                totals.stove += parseFloat(row.stove) || 0;
+                totals.lighter += parseFloat(row.lighter) || 0;
+                totals.tube += parseFloat(row.tube) || 0;
+                totals.total_amount += parseFloat(row.total_amount) || 0;
+                totals.deposit += parseFloat(row.deposit) || 0;
+                totals.amount_paid += parseFloat(row.amount_paid) || 0;
+                totals.amount_od += parseFloat(row.amount_od) || 0;
+            });
+
+            return totals;
+        }
+
+        function displayTable() {
+            const tbody = document.querySelector('#salesTable tbody');
+            tbody.innerHTML = '';
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData = salesData.slice(start, end);
+
+            paginatedData.forEach((data, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${start + index + 1}</td>
+                    <td>${formatDate(data.date)}</td>
+                    <td>${data.name}</td>
+                    <td>${data.load12kg}</td>
+                    <td>${data.empty12kg}</td>
+                    <td>${data.load17kg}</td>
+                    <td>${data.empty17kg}</td>
+                    <td>${data.srg}</td>
+                    <td>${data.adap}</td>
+                    <td>${data.stove}</td>
+                    <td>${data.lighter}</td>
+                    <td>${data.tube}</td>
+                    <td>${data.total_amount}</td>
+                    <td>${data.deposit}</td>
+                    <td>${data.amount_paid}</td>
+                    <td>${data.amount_od}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            const totals = calculateTotals(salesData);
+
+            const totalRow = document.createElement('tr');
+            totalRow.innerHTML = `
+                <td colspan="3"><strong>Total</strong></td>
+                <td>${totals.load12kg.toFixed(2)}</td>
+                <td>${totals.empty12kg.toFixed(2)}</td>
+                <td>${totals.load17kg.toFixed(2)}</td>
+                <td>${totals.empty17kg.toFixed(2)}</td>
+                <td>${totals.srg.toFixed(2)}</td>
+                <td>${totals.adap.toFixed(2)}</td>
+                <td>${totals.stove.toFixed(2)}</td>
+                <td>${totals.lighter.toFixed(2)}</td>
+                <td>${totals.tube.toFixed(2)}</td>
+                <td>${totals.total_amount.toFixed(2)}</td>
+                <td>${totals.deposit.toFixed(2)}</td>
+                <td>${totals.amount_paid.toFixed(2)}</td>
+                <td>${totals.amount_od.toFixed(2)}</td>
+            `;
+            tbody.appendChild(totalRow);
+
+            updatePagination();
+        }
+
+        function updatePagination() {
+            document.getElementById('page-info').textContent = `Page ${currentPage}`;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayTable();
+            }
+        }
+
+        function nextPage() {
+            if (currentPage * rowsPerPage < salesData.length) {
+                currentPage++;
+                displayTable();
+            }
+        }
+
+        function searchTable() {
+            const searchValue = document.getElementById('search').value.toLowerCase();
+            const filteredData = salesData.filter(data => {
+                return data.name.toLowerCase().includes(searchValue);
+            });
+            displayFilteredTable(filteredData);
+        }
+
+        function displayFilteredTable(data) {
+            const tbody = document.querySelector('#salesTable tbody');
+            tbody.innerHTML = '';
+
+            data.forEach((rowData, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${formatDate(rowData.date)}</td>
+                    <td>${rowData.name}</td>
+                    <td>${rowData.load12kg}</td>
+                    <td>${rowData.empty12kg}</td>
+                    <td>${rowData.load17kg}</td>
+                    <td>${rowData.empty17kg}</td>
+                    <td>${rowData.srg}</td>
+                    <td>${rowData.adap}</td>
+                    <td>${rowData.stove}</td>
+                    <td>${rowData.lighter}</td>
+                    <td>${rowData.tube}</td>
+                    <td>${rowData.total_amount}</td>
+                    <td>${rowData.deposit}</td>
+                    <td>${rowData.amount_paid}</td>
+                    <td>${rowData.amount_od}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            const totals = calculateTotals(data);
+
+            const totalRow = document.createElement('tr');
+            totalRow.innerHTML = `
+                <td colspan="3"><strong>Total</strong></td>
+                <td>${totals.load12kg.toFixed(2)}</td>
+                <td>${totals.empty12kg.toFixed(2)}</td>
+                <td>${totals.load17kg.toFixed(2)}</td>
+                <td>${totals.empty17kg.toFixed(2)}</td>
+                <td>${totals.srg.toFixed(2)}</td>
+                <td>${totals.adap.toFixed(2)}</td>
+                <td>${totals.stove.toFixed(2)}</td>
+                <td>${totals.lighter.toFixed(2)}</td>
+                <td>${totals.tube.toFixed(2)}</td>
+                <td>${totals.total_amount.toFixed(2)}</td>
+                <td>${totals.deposit.toFixed(2)}</td>
+                <td>${totals.amount_paid.toFixed(2)}</td>
+                <td>${totals.amount_od.toFixed(2)}</td>
+            `;
+            tbody.appendChild(totalRow);
+        }
+
+        function copyTable() {
+            const table = document.getElementById('salesTable');
+            let range, selection;
+
+            if (document.createRange && window.getSelection) {
+                range = document.createRange();
+                selection = window.getSelection();
+                selection.removeAllRanges();
+                
+                try {
+                    range.selectNodeContents(table);
+                    selection.addRange(range);
+                } catch (e) {
+                    range.selectNode(table);
+                    selection.addRange(range);
+                }
+
+                document.execCommand('copy');
+                alert('Table copied to clipboard');
+            }
+        }
+
+        function exportExcel() {
+            const wb = XLSX.utils.book_new();
+            const dataWithTotals = [...salesData, calculateTotals(salesData)];
+            const ws = XLSX.utils.json_to_sheet(dataWithTotals.map((data, index) => ({
+                '#': index + 1,
+                'Date': formatDate(data.date),
+                'Name': data.name,
+                '12kg Load': data.load12kg,
+                '12kg Empty': data.empty12kg,
+                '17kg Load': data.load17kg,
+                '17kg Empty': data.empty17kg,
+                'SRG': data.srg,
+                'Adap': data.adap,
+                'Stove': data.stove,
+                'Lighter': data.lighter,
+                'Tube': data.tube,
+                'Total Amount': data.total_amount,
+                'Deposit': data.deposit,
+                'Amount Paid': data.amount_paid,
+                'Amount OD': data.amount_od
+            })));
+            XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
+            XLSX.writeFile(wb, "sales_report.xlsx");
+        }
+
+        function exportExcel() {
+    // Create a new workbook
+    const wb = XLSX.utils.book_new();
+
+    // Convert sales data to sheet format
+    const dataWithoutTotals = salesData.map((data, index) => ({
+        '#': index + 1,
+        'Date': formatDate(data.date),
+        'Name': data.name,
+        '12kg Load': data.load12kg,
+        '12kg Empty': data.empty12kg,
+        '17kg Load': data.load17kg,
+        '17kg Empty': data.empty17kg,
+        'SRG': data.srg,
+        'Adap': data.adap,
+        'Stove': data.stove,
+        'Lighter': data.lighter,
+        'Tube': data.tube,
+        'Total Amount': data.total_amount,
+        'Deposit': data.deposit,
+        'Amount Paid': data.amount_paid,
+        'Amount OD': data.amount_od
+    }));
+
+    // Calculate totals
+    const totals = calculateTotals(salesData);
+
+    // Append totals to the data array
+    const dataWithTotals = [...dataWithoutTotals, {
+        '#': 'Total',
+        'Date': '',
+        'Name': '',
+        '12kg Load': totals.load12kg.toFixed(2),
+        '12kg Empty': totals.empty12kg.toFixed(2),
+        '17kg Load': totals.load17kg.toFixed(2),
+        '17kg Empty': totals.empty17kg.toFixed(2),
+        'SRG': totals.srg.toFixed(2),
+        'Adap': totals.adap.toFixed(2),
+        'Stove': totals.stove.toFixed(2),
+        'Lighter': totals.lighter.toFixed(2),
+        'Tube': totals.tube.toFixed(2),
+        'Total Amount': totals.total_amount.toFixed(2),
+        'Deposit': totals.deposit.toFixed(2),
+        'Amount Paid': totals.amount_paid.toFixed(2),
+        'Amount OD': totals.amount_od.toFixed(2)
+    }];
+
+    // Convert data with totals to a worksheet
+    const ws = XLSX.utils.json_to_sheet(dataWithTotals);
+
+    // Append the worksheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
+
+    // Write the workbook to file
+    XLSX.writeFile(wb, "sales_report.xlsx");
+}
+
+    </script>
+</body>
+</html>

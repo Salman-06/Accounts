@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .options {
+            margin-bottom: 20px;
+        }
+        .options button {
+            margin-right: 10px;
+            padding: 5px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .copy { background-color: #6c757d; color: white; font-size: medium;}
+        .csv { background-color: #28a745; color: white; font-size: medium;}
+        .excel { background-color: #20c997; color: white; font-size: medium;}
+        .pdf { background-color: #dc3545; color: white; font-size: medium;}
+        .print { background-color: #6610f2; color: white; font-size: medium;}
+        .homeButton { background-color: #007bff; color: white; font-size: medium;}
+        .search-container {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            padding: 5px;
+            width: 200px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .total-row {
+            font-weight: bold;
+        }
+        .pagination {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .pagination button {
+            margin-left: 5px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .pagination button.active {
+            background-color: #0056b3;
+        }
+        .action-buttons button {
+            margin-right: 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .edit { background-color: #ffc107; color: white; }
+        .delete { background-color: #dc3545; color: white; }
+    
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Sales List</h2>
+            
+        <div class="options">
+            <button class="copy" onclick="copyTable()">Copy</button>
+            <button class="csv" onclick="exportCSV()">CSV</button>
+            <button class="excel" onclick="exportExcel()">Excel</button>
+            <button class="pdf" onclick="exportPDF()">PDF</button>
+            <button class="print" onclick="window.print()">Print</button>
+            <button id="homeButton" class="homeButton">Home</button>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Search..." oninput="searchTable()">
+        </div>
+        
+        <table id="salesTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>12kg Load</th>
+                    <th>12kg Empty</th>
+                    <th>17kg Load</th>
+                    <th>17kg Empty</th>
+                    <th>SRG</th>
+                    <th>Adap</th>
+                    <th>Stove</th>
+                    <th>Lighter</th>
+                    <th>Tube</th>
+                    <th>Total Amount</th>
+                    <th>Deposit</th>
+                    <th>Amount Paid</th>
+                    <th>Amount OD</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be dynamically inserted here -->
+            </tbody>
+        </table>
+        
+        <div class="pagination">
+            <button onclick="prevPage()">Previous</button>
+            <span id="page-info">Page 1</span>
+            <button onclick="nextPage()">Next</button>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="container hidden" id="editFormContainer">
+        <h2>Edit Sale Entry</h2>
+        <form id="editForm">
+            <input type="hidden" id="editIndex">
+            <label>Date: <input type="date" id="editDate"></label><br>
+            <label>Name: <input type="text" id="editName"></label><br>
+            <label>12kg Load: <input type="number" id="edit12kgLoad"></label><br>
+            <label>12kg Empty: <input type="number" id="edit12kgEmpty"></label><br>
+            <label>17kg Load: <input type="number" id="edit17kgLoad"></label><br>
+            <label>17kg Empty: <input type="number" id="edit17kgEmpty"></label><br>
+            <label>SRG: <input type="number" id="editSRG"></label><br>
+            <label>Adap: <input type="number" id="editAdap"></label><br>
+            <label>Stove: <input type="number" id="editStove"></label><br>
+            <label>Lighter: <input type="number" id="editLighter"></label><br>
+            <label>Tube: <input type="number" id="editTube"></label><br>
+            <label>Total Amount: <input type="number" id="editTotalAmount"></label><br>
+            <label>Deposit: <input type="number" id="editDeposit"></label><br>
+            <label>Amount Paid: <input type="number" id="editAmountPaid"></label><br>
+            <label>Amount OD: <input type="number" id="editAmountOD"></label><br>
+            <button type="button" onclick="saveEdit()">Save</button>
+            <button type="button" onclick="cancelEdit()">Cancel</button>
+        </form>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let salesData = [];
+
+        window.onload = function() {
+            fetchSalesData();
+        };
+
+        function fetchSalesData() {
+            fetch('fetch_sales.php')
+                .then(response => response.json())
+                .then(data => {
+                    salesData = data;
+                    displayTable();
+                })
+                .catch(error => console.error('Error fetching sales data:', error));
+        }
+
+        function formatDate(dateString) {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+    }
+
+    document.getElementById('homeButton').onclick = function() {
+            window.location.href = 'index.html';  // Redirect to index.html
+        };
+
+    function displayTable() {
+        const tbody = document.querySelector('#salesTable tbody');
+        tbody.innerHTML = '';
+
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const paginatedData = salesData.slice(start, end);
+
+        paginatedData.forEach((data, index) => {
+            const row = document.createElement('tr');
+            const formattedDate = formatDate(data.date); // Use the new format
+
+            row.innerHTML = `
+                <td><a href="details.php?id=${start + index + 1}">${start + index + 1}</a></td>
+                <td>${formattedDate}</td>
+                <td>${data.name}</td>
+                <td>${data.load12kg}</td>
+                <td>${data.empty12kg}</td>
+                <td>${data.load17kg}</td>
+                <td>${data.empty17kg}</td>
+                <td>${data.srg}</td>
+                <td>${data.adap}</td>
+                <td>${data.stove}</td>
+                <td>${data.lighter}</td>
+                <td>${data.tube}</td>
+                <td>${data.total_amount}</td>
+                <td>${data.deposit}</td>
+                <td>${data.amount_paid}</td>
+                <td>${data.amount_od}</td>
+                <td class="action-buttons">
+                    <button class="edit" onclick="editRow(${start + index})">Edit</button>
+                    <button class="delete" onclick="deleteRow(${start + index})">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        updatePagination();
+    }
+
+        function updatePagination() {
+            document.getElementById('page-info').textContent = `Page ${currentPage}`;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayTable();
+            }
+        }
+
+        function nextPage() {
+            if (currentPage * rowsPerPage < salesData.length) {
+                currentPage++;
+                displayTable();
+            }
+        }
+
+        function editRow(index) {
+            const data = salesData[index];
+
+            // Populate the edit form fields
+            document.getElementById('editIndex').value = index;
+            document.getElementById('editDate').value = data.date;
+            document.getElementById('editName').value = data.name;
+            document.getElementById('edit12kgLoad').value = data.load12kg;
+            document.getElementById('edit12kgEmpty').value = data.empty12kg;
+            document.getElementById('edit17kgLoad').value = data.load17kg;
+            document.getElementById('edit17kgEmpty').value = data.empty17kg;
+            document.getElementById('editSRG').value = data.srg;
+            document.getElementById('editAdap').value = data.adap;
+            document.getElementById('editStove').value = data.stove;
+            document.getElementById('editLighter').value = data.lighter;
+            document.getElementById('editTube').value = data.tube;
+            document.getElementById('editTotalAmount').value = data.total_amount;
+            document.getElementById('editDeposit').value = data.deposit;
+            document.getElementById('editAmountPaid').value = data.amount_paid;
+            document.getElementById('editAmountOD').value = data.amount_od;
+
+            // Show the edit form
+            document.getElementById('editFormContainer').classList.remove('hidden');
+        }
+
+        function saveEdit() {
+            // Get the edited data from the form
+            const index = document.getElementById('editIndex').value;
+            const editedData = {
+                date: document.getElementById('editDate').value,
+                name: document.getElementById('editName').value,
+                load12kg: document.getElementById('edit12kgLoad').value,
+                empty12kg: document.getElementById('edit12kgEmpty').value,
+                load17kg: document.getElementById('edit17kgLoad').value,
+                empty17kg: document.getElementById('edit17kgEmpty').value,
+                srg: document.getElementById('editSRG').value,
+                adap: document.getElementById('editAdap').value,
+                stove: document.getElementById('editStove').value,
+                lighter: document.getElementById('editLighter').value,
+                tube: document.getElementById('editTube').value,
+                total_amount: document.getElementById('editTotalAmount').value,
+                deposit: document.getElementById('editDeposit').value,
+                amount_paid: document.getElementById('editAmountPaid').value,
+                amount_od: document.getElementById('editAmountOD').value
+            };
+
+            // Update the salesData array
+            salesData[index] = editedData;
+
+            // Update localStorage
+            localStorage.setItem('salesData', JSON.stringify(salesData));
+
+            // Hide the edit form
+            document.getElementById('editFormContainer').classList.add('hidden');
+
+            // Redisplay the table
+            displayTable();
+        }
+
+        function cancelEdit() {
+            // Hide the edit form
+            document.getElementById('editFormContainer').classList.add('hidden');
+        }
+
+        function deleteRow(index) {
+            salesData.splice(index, 1);
+            localStorage.setItem('salesData', JSON.stringify(salesData));
+            displayTable();
+        }
+
+        function searchTable() {
+            const searchValue = document.getElementById('search').value.toLowerCase();
+            const filteredData = salesData.filter(data => {
+                return Object.values(data).some(value => value.toString().toLowerCase().includes(searchValue));
+            });
+            displayFilteredTable(filteredData);
+        }
+
+        function displayFilteredTable(data) {
+            const tbody = document.querySelector('#salesTable tbody');
+            tbody.innerHTML = '';
+
+            data.forEach((rowData, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${rowData.date}</td>
+                    <td>${rowData.name}</td>
+                    <td>${rowData.load12kg}</td>
+                    <td>${rowData.empty12kg}</td>
+                    <td>${rowData.load17kg}</td>
+                    <td>${rowData.empty17kg}</td>
+                    <td>${rowData.srg}</td>
+                    <td>${rowData.adap}</td>
+                    <td>${rowData.stove}</td>
+                    <td>${rowData.lighter}</td>
+                    <td>${rowData.tube}</td>
+                    <td>${rowData.total_amount}</td>
+                    <td>${rowData.deposit}</td>
+                    <td>${rowData.amount_paid}</td>
+                    <td>${rowData.amount_od}</td>
+                    <td class="action-buttons">
+                        <button class="edit">Edit</button>
+                        <button class="delete">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function copyTable() {
+            const table = document.getElementById('salesTable');
+            let range, selection;
+
+            if (document.createRange && window.getSelection) {
+                range = document.createRange();
+                selection = window.getSelection();
+                selection.removeAllRanges();
+                
+                try {
+                    range.selectNodeContents(table);
+                    selection.addRange(range);
+                } catch (e) {
+                    range.selectNode(table);
+                    selection.addRange(range);
+                }
+
+                document.execCommand('copy');
+                alert('Table copied to clipboard');
+            }
+        }
+
+        function exportCSV() {
+            const table = document.getElementById('salesTable');
+            let csv = [];
+            const rows = table.querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td, th');
+                let rowData = [];
+                
+                cols.forEach(col => {
+                    rowData.push(col.innerText);
+                });
+                
+                csv.push(rowData.join(','));
+            });
+
+            const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
+            const downloadLink = document.createElement('a');
+            downloadLink.download = 'sales_data.csv';
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+
+        function exportExcel() {
+            const table = document.getElementById('salesTable');
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Sales Data');
+            XLSX.writeFile(workbook, 'sales_data.xlsx');
+        }
+
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const table = document.getElementById('salesTable');
+            const rows = [];
+
+            table.querySelectorAll('tr').forEach(row => {
+                const rowData = [];
+                row.querySelectorAll('td, th').forEach(col => {
+                    rowData.push(col.innerText);
+                });
+                rows.push(rowData);
+            });
+
+            doc.autoTable({
+                head: [rows[0]],
+                body: rows.slice(1),
+            });
+
+            doc.save('sales_data.pdf');
+        }
+    </script>
+</body>
+</html>

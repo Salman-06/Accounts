@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .table-cell {
+            width: 8rem; /* Same width for all columns */
+        }
+        .btn-3d {
+            position: relative;
+            padding: 0.5rem 1rem;
+            border: none;
+            background: #4a90e2;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+        .btn-3d:active {
+            transform: translateY(4px);
+        }
+        .btn-3d::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 100%;
+            width: 100%;
+            height: 4px;
+            background: #3a7bd5;
+        }
+    </style>
+</head>
+<body class="p-6">
+    <h1 class="text-2xl font-bold mb-4">Stock Management</h1>
+    <form id="stockForm" action="save_stock.php" method="POST" onsubmit="return saveStock(event)">
+        <label for="date" class="block mb-2">Select Date: </label>
+        <input type="date" id="date" name="date" class="mb-4 p-2 border rounded" onchange="fetchPreviousStock()">
+        <br><br>
+        <div class="overflow-x-auto">
+            <table class="min-w-full border-collapse border border-gray-400">
+                <thead>
+                    <tr>
+                        <th class="border border-gray-300 p-2 table-cell"></th>
+                        <th class="border border-gray-300 p-2 table-cell">12kg Empty</th>
+                        <th class="border border-gray-300 p-2 table-cell">12kg Load</th>
+                        <th class="border border-gray-300 p-2 table-cell">17kg Empty</th>
+                        <th class="border border-gray-300 p-2 table-cell">17kg Load</th>
+                        <th class="border border-gray-300 p-2 table-cell">Hose</th>
+                        <th class="border border-gray-300 p-2 table-cell">SRG</th>
+                        <th class="border border-gray-300 p-2 table-cell">Ind SRG</th>
+                        <th class="border border-gray-300 p-2 table-cell">Adap</th>
+                        <th class="border border-gray-300 p-2 table-cell">Ind Adap</th>
+                        <th class="border border-gray-300 p-2 table-cell">Lighter</th>
+                        <th class="border border-gray-300 p-2 table-cell">Stove</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="border border-gray-300 p-2 table-cell">Opening Stock</td>
+                        <td><input type="number" name="opening_12kg_empty" id="opening_12kg_empty" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="opening_12kg_load" id="opening_12kg_load" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="opening_17kg_empty" id="opening_17kg_empty" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="opening_17kg_load" id="opening_17kg_load" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="opening_hose" id="opening_hose" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="opening_srg" id="opening_srg" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="opening_ind_srg" id="opening_ind_srg" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="opening_adap" id="opening_adap" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="opening_ind_adap" id="opening_ind_adap" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="opening_lighter" id="opening_lighter" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="opening_stove" id="opening_stove" class="w-full p-2 border rounded" readonly></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-300 p-2 table-cell">Purchase</td>
+                        <td><input type="number" name="purchase_12kg_empty" id="purchase_12kg_empty" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="purchase_12kg_load" id="purchase_12kg_load" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="purchase_17kg_empty" id="purchase_17kg_empty" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="purchase_17kg_load" id="purchase_17kg_load" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="purchase_hose" id="purchase_hose" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="purchase_srg" id="purchase_srg" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="purchase_ind_srg" id="purchase_ind_srg" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="purchase_adap" id="purchase_adap" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="purchase_ind_adap" id="purchase_ind_adap" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="purchase_lighter" id="purchase_lighter" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="purchase_stove" id="purchase_stove" class="w-full p-2 border rounded" value="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-300 p-2 table-cell">Sales</td>
+                        <td><input type="number" name="sales_12kg_empty" id="sales_12kg_empty" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="sales_12kg_load" id="sales_12kg_load" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="sales_17kg_empty" id="sales_17kg_empty" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="sales_17kg_load" id="sales_17kg_load" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="sales_hose" id="sales_hose" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="sales_srg" id="sales_srg" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="sales_ind_srg" id="sales_ind_srg" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="sales_adap" id="sales_adap" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="sales_ind_adap" id="sales_ind_adap" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="sales_lighter" id="sales_lighter" class="w-full p-2 border rounded" value="0"></td>
+                        <td><input type="number" name="sales_stove" id="sales_stove" class="w-full p-2 border rounded" value="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-300 p-2 table-cell">Closing Stock</td>
+                        <td><input type="number" name="closing_12kg_empty" id="closing_12kg_empty" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="closing_12kg_load" id="closing_12kg_load" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="closing_17kg_empty" id="closing_17kg_empty" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="closing_17kg_load" id="closing_17kg_load" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="closing_hose" id="closing_hose" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="closing_srg" id="closing_srg" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="closing_ind_srg" id="closing_ind_srg" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="closing_adap" id="closing_adap" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="closing_ind_adap" id="closing_ind_adap" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="closing_lighter" id="closing_lighter" class="w-full p-2 border rounded" readonly></td>
+                        <td><input type="number" name="closing_stove" id="closing_stove" class="w-full p-2 border rounded" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <br><br>
+        <button type="button" class="btn-3d" onclick="calculateClosingStock()">Calculate</button>
+        <button type="submit" class="btn-3d ml-4">Save Stock</button>
+    </form>
+    <script>
+        function fetchPreviousStock() {
+            const date = document.getElementById('date').value;
+            if (date) {
+                fetch(`fetch_stock.php?date=${date}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('opening_12kg_empty').value = data.closing_12kg_empty || 0;
+                        document.getElementById('opening_12kg_load').value = data.closing_12kg_load || 0;
+                        document.getElementById('opening_17kg_empty').value = data.closing_17kg_empty || 0;
+                        document.getElementById('opening_17kg_load').value = data.closing_17kg_load || 0;
+                        document.getElementById('opening_hose').value = data.closing_hose || 0;
+                        document.getElementById('opening_srg').value = data.closing_srg || 0;
+                        document.getElementById('opening_ind_srg').value = data.closing_ind_srg || 0;
+                        document.getElementById('opening_adap').value = data.closing_adap || 0;
+                        document.getElementById('opening_ind_adap').value = data.closing_ind_adap || 0;
+                        document.getElementById('opening_lighter').value = data.closing_lighter || 0;
+                        document.getElementById('opening_stove').value = data.closing_stove || 0;
+                    });
+            }
+        }
+
+        function calculateClosingStock() {
+            const fields = ['12kg_empty', '12kg_load', '17kg_empty', '17kg_load', 'hose', 'srg', 'ind_srg', 'adap', 'ind_adap', 'lighter', 'stove'];
+
+            fields.forEach(field => {
+                const opening = parseFloat(document.getElementById(`opening_${field}`).value) || 0;
+                const purchase = parseFloat(document.getElementById(`purchase_${field}`).value) || 0;
+                const sales = parseFloat(document.getElementById(`sales_${field}`).value) || 0;
+                const closing = opening + purchase - sales;
+                document.getElementById(`closing_${field}`).value = closing;
+            });
+        }
+
+        function saveStock(event) {
+            event.preventDefault();
+            const formData = new FormData(document.getElementById('stockForm'));
+            fetch('save_stock.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert('Record saved successfully!');
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error saving stock:', error);
+                alert('An error occurred while saving the record.');
+            });
+        }
+    </script>
+</body>
+</html>

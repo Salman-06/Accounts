@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .options {
+            margin-bottom: 20px;
+        }
+        .options button {
+            margin-right: 10px;
+            padding: 5px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .copy { background-color: #6c757d; color: white; }
+        .csv { background-color: #28a745; color: white; }
+        .excel { background-color: #20c997; color: white; }
+        .pdf { background-color: #dc3545; color: white; }
+        .print { background-color: #6610f2; color: white; }
+        .search-container {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            padding: 5px;
+            width: 200px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .total-row {
+            font-weight: bold;
+        }
+        .pagination {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .pagination button {
+            margin-left: 5px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .pagination button.active {
+            background-color: #0056b3;
+        }
+        .action-buttons button {
+            margin-right: 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .edit { background-color: #ffc107; color: white; }
+        .delete { background-color: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Sales List</h2>
+        
+        <div class="options">
+            <button class="copy" onclick="copyTable()">Copy</button>
+            <button class="csv" onclick="exportCSV()">CSV</button>
+            <button class="excel" onclick="exportExcel()">Excel</button>
+            <button class="pdf" onclick="exportPDF()">PDF</button>
+            <button class="print" onclick="window.print()">Print</button>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Search..." oninput="searchTable()">
+        </div>
+        
+        <table id="salesTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>12kg Load</th>
+                    <th>12kg Empty</th>
+                    <th>17kg Load</th>
+                    <th>17kg Empty</th>
+                    <th>SRG</th>
+                    <th>Adap</th>
+                    <th>Stove</th>
+                    <th>Lighter</th>
+                    <th>Tube</th>
+                    <th>Total Amount</th>
+                    <th>Deposit</th>
+                    <th>Amount Paid</th>
+                    <th>Amount OD</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be dynamically inserted here -->
+            </tbody>
+        </table>
+        
+        <div class="pagination">
+            <button onclick="prevPage()">Previous</button>
+            <span id="page-info">Page 1</span>
+            <button onclick="nextPage()">Next</button>
+        </div>
+    </div>
+
+    <script src="/salesScript.js"></script>
+
+</body>
+</html>

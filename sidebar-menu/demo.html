@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="text/javascript" src="app.js" defer></script>
+</head>
+<body>
+  <nav id="sidebar">
+    <ul>
+      <li>
+        <span class="logo">Covai Traders</span>
+        <button onclick=toggleSidebar() id="toggle-btn">
+          <!-- SVG Icon -->
+        </button>
+      </li>
+      <li class="active">
+        <a href="#" onclick="document.getElementById('content-frame').src='home.html'; return false;">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+            <!-- Icon Path -->
+          </svg>
+          <span>Home</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" onclick="document.getElementById('content-frame').src='dashboard.html'; return false;">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+            <!-- Icon Path -->
+          </svg>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <button onclick="toggleSubMenu(this)" class="dropdown-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+            <!-- Icon Path -->
+          </svg>
+          <span>Sales</span>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+            <!-- Icon Path -->
+          </svg>
+        </button>
+        <ul class="sub-menu">
+          <div>
+            <li><a href="#" onclick="document.getElementById('content-frame').src='salesEntry.html'; return false;">Sales Entry</a></li>
+            <li><a href="#" onclick="document.getElementById('content-frame').src='outstanding.html'; return false;">Outstanding</a></li>
+            <li><a href="#" onclick="document.getElementById('content-frame').src='salesList.html'; return false;">Sales List</a></li>
+            <li><a href="#" onclick="document.getElementById('content-frame').src='salesReport.html'; return false;">Sales Report</a></li>
+          </div>
+        </ul>
+      </li>
+      <li>
+        <button onclick="toggleSubMenu(this)" class="dropdown-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+            <!-- Icon Path -->
+          </svg>
+          <span>Purchase</span>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+            <!-- Icon Path -->
+          </svg>
+        </button>
+        <ul class="sub-menu">
+          <div>
+            <li><a href="#" onclick="document.getElementById('content-frame').src='purchaseEntry.html'; return false;">Purchase Entry</a></li>
+            <li><a href="#" onclick="document.getElementById('content-frame').src='purchaseList.html'; return false;">Purchase List</a></li>
+          </div>
+        </ul>
+      </li>
+      <li>
+        <a href="#" onclick="document.getElementById('content-frame').src='calendar.html'; return false;">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+            <!-- Icon Path -->
+          </svg>
+          <span>Calendar</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" onclick="document.getElementById('content-frame').src='security.html'; return false;">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+            <!-- Icon Path -->
+          </svg>
+          <span>Security</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" onclick="document.getElementById('content-frame').src='logout.html'; return false;">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+            <!-- Icon Path -->
+          </svg>
+          <span>Logout</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <main>
+    <iframe id="content-frame" src="home.html" style="width: 100%; height: 80vh; border: none;"></iframe>
+  </main>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase List</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .button-3d {
+            background: linear-gradient(145deg, #5b68da, #5b68da);
+            box-shadow: 5px 5px 10px #b8b8b8, -5px -5px 10px #ffffff;
+            transition: transform 0.2s ease;
+        }
+        .button-3d:hover {
+            transform: translateY(-3px);
+
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+        td {
+            text-align: right;
+        }
+    </style>
+</head>
+<body class="p-5 font-sans">
+    <div class="header flex justify-between items-center mb-4">
+        <h1 class="text-xl font-bold">Purchase List</h1>
+    </div>
+
+    <div class="flex justify-between mb-4">
+        <div class="download-options space-x-2">
+            <button class="button-3d px-4 py-2 rounded-md cursor-pointer" onclick="exportToCSV()">CSV</button>
+            <button class="button-3d px-4 py-2 rounded-md cursor-pointer" onclick="exportToExcel()">Excel</button>
+            <button class="button-3d px-4 py-2 rounded-md cursor-pointer" onclick="exportToPDF()">PDF</button>
+            <button class="button-3d px-4 py-2 rounded-md cursor-pointer" onclick="window.print()">Print</button>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search..." onkeyup="searchTable()" class="px-3 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+    </div>
+
+    <table id="purchaseTable" class="w-full border-collapse table-auto mt-6 mb-8">
+        <thead>
+            <tr>
+                <th class="border px-4 py-2 text-left">#</th>
+                <th class="border px-4 py-2 text-left">Purchase Date</th>
+                <th class="border px-4 py-2 text-left">Purchase Bill</th>
+                <th class="border px-4 py-2 text-right">12kg Load</th>
+                <th class="border px-4 py-2 text-right">12kg Given</th>
+                <th class="border px-4 py-2 text-right">17kg Load</th>
+                <th class="border px-4 py-2 text-right">17kg Given</th>
+                <th class="border px-4 py-2 text-right">12kg Amount</th>
+                <th class="border px-4 py-2 text-right">17kg Amount</th>
+                <th class="border px-4 py-2 text-right">Total Purchase Value</th>
+                <th class="border px-4 py-2 text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody id="purchaseTableBody">
+            <!-- Data will be populated here -->
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="border px-4 py-2 text-left">Total</td>
+                <td id="total12kgLoad" class="border px-4 py-2 text-right">0</td>
+                <td id="total12kgGiven" class="border px-4 py-2 text-right">0</td>
+                <td id="total17kgLoad" class="border px-4 py-2 text-right">0</td>
+                <td id="total17kgGiven" class="border px-4 py-2 text-right">0</td>
+                <td id="total12kgAmount" class="border px-4 py-2 text-right">0.00</td>
+                <td id="total17kgAmount" class="border px-4 py-2 text-right">0.00</td>
+                <td id="totalPurchaseValue" class="border px-4 py-2 text-right">0.00</td>
+                <td class="border px-4 py-2"></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="pagination flex justify-center mt-4 space-x-4">
+        <button class="button-3d px-4 py-2 rounded-md cursor-pointer" onclick="changePage(-1)">Previous</button>
+        <span id="currentPage" class="text-lg">1</span>
+        <button class="button-3d px-4 py-2 rounded-md cursor-pointer" onclick="changePage(1)">Next</button>
+    </div>
+
+    <script>
+        // Pagination variables
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let allPurchases = [];
+
+        // Fetch purchases from the server
+        function fetchPurchases() {
+            fetch('get_purchases.php')
+                .then(response => response.json())
+                .then(data => {
+                    allPurchases = data;
+                    renderTable();
+                    updateTotals();
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function formatDate(dateString) {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+    }
+
+    function renderTable() {
+    const tableBody = document.getElementById('purchaseTableBody');
+    tableBody.innerHTML = '';
+
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const pageData = allPurchases.slice(start, end);
+
+    pageData.forEach((purchase, index) => {
+        const row = tableBody.insertRow();
+        const formattedDate = formatDate(purchase.purchase_date); // Format date
+
+        // Calculate total purchase value by summing 12kg and 17kg amounts
+        const totalPurchaseValue = parseFloat(purchase.amount12kg || 0) + parseFloat(purchase.amount17kg || 0);
+
+        row.innerHTML = `
+            <td><a href="details.php?id=${start + index + 1}">${start + index + 1}</a></td>
+            <td>${formattedDate}</td>
+            <td>${purchase.purchase_bill}</td>
+            <td>${purchase.item_details}</td>
+            <td>${purchase.given12kg}</td>
+            <td>${purchase.load17kg}</td>
+            <td>${purchase.given17kg}</td>
+            <td>${purchase.amount12kg}</td>
+            <td>${purchase.amount17kg}</td>
+            <td>${totalPurchaseValue.toFixed(2)}</td> <!-- Display the calculated total -->
+            <td>
+                <button onclick="editEntry(${purchase.id})" class="button-3d">Edit</button>
+                <button onclick="deleteEntry(${purchase.id})" class="button-3d">Delete</button>
+            </td>
+        `;
+    });
+}
+
+function updateTotals() {
+    // Initialize totals
+    let total12kgLoad = 0;
+    let total12kgGiven = 0;
+    let total17kgLoad = 0;
+    let total17kgGiven = 0;
+    let total12kgAmount = 0;
+    let total17kgAmount = 0;
+    let totalPurchaseValue = 0;
+
+    // Loop through all purchases and sum up values
+    allPurchases.forEach(purchase => {
+        // Safely parse each value, defaulting to 0 if it's not a number
+        total12kgLoad += parseFloat(purchase.item_details) || 0;
+        total12kgGiven += parseFloat(purchase.given12kg) || 0;
+        total17kgLoad += parseFloat(purchase.load17kg) || 0;
+        total17kgGiven += parseFloat(purchase.given17kg) || 0;
+        total12kgAmount += parseFloat(purchase.amount12kg) || 0;
+        total17kgAmount += parseFloat(purchase.amount17kg) || 0;
+        totalPurchaseValue += (parseFloat(purchase.amount12kg) || 0) + (parseFloat(purchase.amount17kg) || 0);
+    });
+
+    // Update the totals in the table footer
+    document.getElementById('total12kgLoad').textContent = total12kgLoad.toFixed(2);
+    document.getElementById('total12kgGiven').textContent = total12kgGiven.toFixed(2);
+    document.getElementById('total17kgLoad').textContent = total17kgLoad.toFixed(2);
+    document.getElementById('total17kgGiven').textContent = total17kgGiven.toFixed(2);
+    document.getElementById('total12kgAmount').textContent = total12kgAmount.toFixed(2);
+    document.getElementById('total17kgAmount').textContent = total17kgAmount.toFixed(2);
+    document.getElementById('totalPurchaseValue').textContent = totalPurchaseValue.toFixed(2);
+}
+
+
+        function searchTable() {
+    const input = document.getElementById('searchInput').value.toUpperCase();
+    
+    if (input === '') {
+        // If search input is empty, reload all purchases
+        fetchPurchases();  
+    } else {
+        // Filter based on purchase bill or purchase date
+        const filteredPurchases = allPurchases.filter(purchase => 
+            purchase.purchase_bill.toUpperCase().includes(input) || 
+            purchase.purchase_date.includes(input)  // Match the date directly
+        );
+        
+        currentPage = 1;
+        allPurchases = filteredPurchases;
+        renderTable();
+    }
+}
+
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(allPurchases.length / rowsPerPage);
+            currentPage += direction;
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            document.getElementById('currentPage').textContent = currentPage;
+            renderTable();
+        }
+
+        function editEntry(id) {
+    window.location.href = `purchaseEntry.html?id=${id}`;  // Pass the purchase ID to the URL
+}
+
+
+function deleteEntry(id) {
+    if (confirm("Are you sure you want to delete this purchase?")) {
+        // Send a DELETE request to delete the selected purchase by ID
+        fetch(`delete_purchase.php?id=${id}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Purchase deleted successfully.');
+                window.location.reload();  // Reload the purchase list after deletion
+            } else {
+                alert('Failed to delete the purchase.');
+            }
+        })
+        .catch(error => console.error('Error deleting purchase:', error));
+    }
+}
+
+        function exportToCSV() {
+            let csv = [];
+            let rows = document.querySelectorAll("table tr");
+            
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll("td, th");
+                
+                for (let j = 0; j < cols.length - 1; j++) 
+                    row.push(cols[j].innerText);
+                
+                csv.push(row.join(","));        
+            }
+
+            let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
+            let downloadLink = document.createElement("a");
+            downloadLink.download = "purchase_list.csv";
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+        }
+
+        function exportToExcel() {
+    const table = document.getElementById('purchaseTable');
+    const wb = XLSX.utils.table_to_book(table, { sheet: "PurchaseList" });
+    XLSX.writeFile(wb, "Purchase_List.xlsx");
+}
+
+
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.autoTable({ html: '#purchaseTable' });
+            doc.save('purchase_list.pdf');
+        }
+
+        // Initialize the table
+        window.onload = function() {
+            fetchPurchases();
+        }
+    </script>
+</body>
+</html>

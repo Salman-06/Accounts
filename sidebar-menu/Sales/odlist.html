@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OD List</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            border: 2px solid #333;
+            padding: 20px;
+            width: 80%;
+        }
+        .left-table, .right-table {
+            width: 45%;
+            margin: 0 10px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+        input[type="text"], input[type="number"], input[type="date"] {
+            width: 150px;
+        }
+        .header {
+            text-align: center;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            width: 80%;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: inline-block;
+            width: 100px;
+        }
+        .form-group input, .form-group button {
+            padding: 5px;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-group button {
+            width: auto;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Header with Date -->
+    <div class="header">
+        <h2>OD List Tracker</h2>
+        <p>
+            <label for="selectedDate">Select Date:</label>
+            <input type="date" id="selectedDate" onchange="fetchODList()">
+        </p>
+    </div>
+    
+    <!-- Container for the tables -->
+    <div class="container">
+        <!-- Left Table: OD Collected -->
+        <div class="left-table">
+            <h3>OD Collected</h3>
+            <table id="odCollectedTable">
+                <tr>
+                    <th>OD Collected</th>
+                    <th>Cash</th>
+                    <th>GPAY/Bank</th>
+                </tr>
+                <tr>
+                    <td><input type="text" id="odCollectedName"></td>
+                    <td><input type="number" id="cashAmount"></td>
+                    <td><input type="number" id="gpayAmount"></td>
+                </tr>
+            </table>
+            <button onclick="addODCollected()">Add Collected</button>
+            <table id="odCollectedList">
+                <!-- Dynamic entries will appear here -->
+            </table>
+        </div>
+
+        <!-- Right Table: Outstanding -->
+        <div class="right-table">
+            <h3>Outstanding</h3>
+            <table id="outstandingTable">
+                <tr>
+                    <th>Outstanding Name</th>
+                    <th>Amount</th>
+                </tr>
+                <tr>
+                    <td><input type="text" id="outstandingName"></td>
+                    <td><input type="number" id="outstandingAmount"></td>
+                </tr>
+            </table>
+            <button onclick="addOutstanding()">Add Outstanding</button>
+            <table id="outstandingList">
+                <!-- Dynamic entries will appear here -->
+            </table>
+        </div>
+    </div>
+
+    <!-- Footer for Total Calculations -->
+    <div class="footer">
+        <h3>Totals</h3>
+        <p>Initial Total: <input type="text" id="initialTotal" readonly></p>
+        <p>OD Collected Total: <input type="text" id="odCollectedTotal" readonly></p>
+        <p>Outstanding Total: <input type="text" id="outstandingTotal" readonly></p>
+        <p>Final Total: <input type="text" id="finalCalculatedTotal" readonly></p>
+    </div>
+
+    <script>
+        let odCollectedList = [];
+        let outstandingList = [];
+
+        function addODCollected() {
+            const name = document.getElementById('odCollectedName').value;
+            const cash = parseFloat(document.getElementById('cashAmount').value) || 0;
+            const gpay = parseFloat(document.getElementById('gpayAmount').value) || 0;
+
+            if (name) { // Ensure the name is not empty
+                odCollectedList.push({name, cash, gpay});
+                updateODCollectedTable();
+                // Clear the inputs after adding
+                document.getElementById('odCollectedName').value = '';
+                document.getElementById('cashAmount').value = '';
+                document.getElementById('gpayAmount').value = '';
+            }
+        }
+
+        function addOutstanding() {
+            const name = document.getElementById('outstandingName').value;
+            const amount = parseFloat(document.getElementById('outstandingAmount').value) || 0;
+
+            if (name) { // Ensure the name is not empty
+                outstandingList.push({name, amount});
+                updateOutstandingTable();
+                // Clear the inputs after adding
+                document.getElementById('outstandingName').value = '';
+                document.getElementById('outstandingAmount').value = '';
+            }
+        }
+
+        function updateODCollectedTable() {
+            let odCollectedTotal = 0;
+            let odCollectedHTML = "";
+
+            odCollectedList.forEach(item => {
+                odCollectedHTML += `<tr><td>${item.name}</td><td>${item.cash}</td><td>${item.gpay}</td></tr>`;
+                odCollectedTotal += (item.cash + item.gpay);
+            });
+
+            document.getElementById('odCollectedList').innerHTML = odCollectedHTML;
+            document.getElementById('odCollectedTotal').value = odCollectedTotal.toFixed(2);
+            updateFinalCalculatedTotal();
+        }
+
+        function updateOutstandingTable() {
+            let outstandingTotal = 0;
+            let outstandingHTML = "";
+
+            outstandingList.forEach(item => {
+                outstandingHTML += `<tr><td>${item.name}</td><td>${item.amount}</td></tr>`;
+                outstandingTotal += item.amount;
+            });
+
+            document.getElementById('outstandingList').innerHTML = outstandingHTML;
+            document.getElementById('outstandingTotal').value = outstandingTotal.toFixed(2);
+            updateFinalCalculatedTotal();
+        }
+
+        function updateFinalCalculatedTotal() {
+            const initialTotal = parseFloat(document.getElementById('initialTotal').value) || 0;
+            const odCollectedTotal = parseFloat(document.getElementById('odCollectedTotal').value) || 0;
+            const outstandingTotal = parseFloat(document.getElementById('outstandingTotal').value) || 0;
+
+            const finalCalculatedTotal = initialTotal - odCollectedTotal - outstandingTotal;
+            document.getElementById('finalCalculatedTotal').value = finalCalculatedTotal.toFixed(2);
+        }
+
+        function fetchODList() {
+            const selectedDate = document.getElementById('selectedDate').value;
+            fetch(`fetch_od_data.php?date=${selectedDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('initialTotal').value = data.initialTotal;
+                        odCollectedList = data.odCollectedList || [];
+                        outstandingList = data.outstandingList || [];
+                        updateODCollectedTable();
+                        updateOutstandingTable();
+                        updateFinalCalculatedTotal();
+                    } else {
+                        alert('Failed to fetch data');
+                    }
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+    </script>
+</body>
+</html>

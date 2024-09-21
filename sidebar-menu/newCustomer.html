@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Customer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto p-8">
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <h1 class="text-2xl font-bold text-center mb-6">New Customer</h1>
+
+            <button id="homeButton" class="button-3d px-4 py-2 rounded-md bg-indigo-500 text-white hover:bg-indigo-600 shadow-lg">Home</button>
+
+            <!-- Form Start -->
+            <form action="submit_customer.php" method="post" enctype="multipart/form-data">
+
+                <!-- First Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                    <div>
+                        <label for="companyName" class="block text-gray-700 text-sm font-bold mb-2">Company Name</label>
+                        <input id="companyName" name="companyName" type="text" placeholder="Enter Company Name" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="customerName" class="block text-gray-700 text-sm font-bold mb-2">Customer Name</label>
+                        <input id="customerName" name="customerName" type="text" placeholder="Enter Customer Name" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="phoneNumber" class="block text-gray-700 text-sm font-bold mb-2">Phone Number</label>
+                        <input id="phoneNumber" name="phoneNumber" type="text" placeholder="Enter Phone Number" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                </div>
+
+                <!-- Second Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                    <div>
+                        <label for="address1" class="block text-gray-700 text-sm font-bold mb-2">Address 1</label>
+                        <input id="address1" name="address1" type="text" placeholder="Enter Address 1" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label for="address2" class="block text-gray-700 text-sm font-bold mb-2">Address 2</label>
+                        <input id="address2" name="address2" type="text" placeholder="Enter Address 2" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <!-- Third Row -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
+                    <div>
+                        <label for="city" class="block text-gray-700 text-sm font-bold mb-2">City</label>
+                        <input id="city" name="city" type="text" placeholder="Enter City" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label for="pincode" class="block text-gray-700 text-sm font-bold mb-2">Pincode</label>
+                        <input id="pincode" name="pincode" type="text" placeholder="Enter Pincode" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label for="district" class="block text-gray-700 text-sm font-bold mb-2">District</label>
+                        <input id="district" name="district" type="text" placeholder="Enter District" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label for="state" class="block text-gray-700 text-sm font-bold mb-2">State</label>
+                        <input id="state" name="state" type="text" placeholder="Enter State" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <!-- Fourth Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                    <div>
+                        <label for="gstin" class="block text-gray-700 text-sm font-bold mb-2">GSTIN</label>
+                        <input id="gstin" name="gstin" type="text" placeholder="Enter GSTIN" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label for="idProof" class="block text-gray-700 text-sm font-bold mb-2">Customer ID Proof</label>
+                        <select id="idProof" name="idProof" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option>Aadhar Number</option>
+                            <option>Driving License</option>
+                            <option>PAN Card</option>
+                            <option>GSTIN</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="photo" class="block text-gray-700 text-sm font-bold mb-2">Upload Photo (JPEG)</label>
+                        <input id="photo" name="photo" type="file" accept=".jpeg" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-center">
+                    <button type="submit" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Submit</button><br>
+                <!-- Add this button in newCustomer.html for updating -->
+                </div>
+            </form>
+            <!-- Form End -->
+        </div>
+    </div>
+    <script>
+
+document.getElementById('homeButton').onclick = function() {
+            window.location.href = 'index.html';  // Redirect to index.html
+};
+
+         // Function to get the customer data by ID
+    function getCustomerData() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const customerId = urlParams.get('id');
+        
+        if (customerId) {
+            // Fetch customer data from the database using the ID
+            fetch(`fetch_customer_data.php?id=${customerId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate the form fields with the customer data
+                    document.getElementById('companyName').value = data.companyName;
+                    document.getElementById('customerName').value = data.customerName;
+                    document.getElementById('phoneNumber').value = data.phoneNumber;
+                    document.getElementById('address1').value = data.address1;
+                    document.getElementById('address2').value = data.address2;
+                    document.getElementById('city').value = data.city;
+                    document.getElementById('pincode').value = data.pincode;
+                    document.getElementById('district').value = data.district;
+                    document.getElementById('state').value = data.state;
+                    document.getElementById('gstin').value = data.gstin;
+                })
+                .catch(error => console.error('Error fetching customer data:', error));
+        }
+    }
+
+    // Call the function to load customer data on page load
+    window.onload = getCustomerData;
+
+    function updateCustomer() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const customerId = urlParams.get('id');
+
+    const formData = new FormData(document.querySelector('form'));
+    formData.append('id', customerId); // Include the customer ID
+
+    fetch('update_customer.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Redirect back to viewCustomer.html after successful update
+            window.location.href = 'viewCustomer.html';
+        } else {
+            alert('Failed to update customer');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+<!-- Update button (appears only when editing a customer) -->
+<div class="flex justify-center">
+    <button type="button" onclick="updateCustomer()" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Update</button>
+</div>
+
+document.getElementById('homeButton').onclick = function() {
+            window.location.href = 'index.html';  // Redirect to index.html
+};
+
+</script>    
+</body>
+</html>

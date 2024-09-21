@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Entry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom 3D button */
+        .btn-3d {
+            position: relative;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1.2rem;
+            padding: 10px 30px;
+            border-radius: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 0 #3b873e;
+        }
+        .btn-3d:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #3b873e;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+<div class="container mx-auto mt-10 max-w-3xl bg-white p-8 rounded-lg shadow-lg">
+    <h2 class="text-center text-2xl font-bold mb-8">Sales Entry</h2>
+
+    <!-- First Row: Date, Name, Load Selection -->
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label for="date" class="block font-semibold mb-2">Date:</label>
+            <input type="date" id="date" class="w-full p-3 border border-gray-300 rounded-lg" required>
+        </div>
+        <div>
+            <label for="name" class="block font-semibold mb-2">Name:</label>
+            <input type="text" id="name" placeholder="Enter name" class="w-full p-3 border border-gray-300 rounded-lg" required>
+        </div>
+        <div>
+            <label for="load" class="block font-semibold mb-2">Select Load:</label>
+            <select id="load" class="w-full p-3 border border-gray-300 rounded-lg">
+                <option value="12kg">12kg</option>
+                <option value="17kg">17kg</option>
+            </select>
+        </div>
+        <div>
+            <label for="loadQty" class="block font-semibold mb-2">Load Quantity:</label>
+            <input type="number" id="loadQty" placeholder="12kg or 17kg Load Qty" class="w-full p-3 border border-gray-300 rounded-lg" required>
+        </div>
+    </div>
+
+    <!-- Second Row: Empty Selection -->
+    <div class="grid grid-cols-2 gap-4 mt-6">
+        <div>
+            <label for="empty" class="block font-semibold mb-2">Select Empty:</label>
+            <select id="empty" class="w-full p-3 border border-gray-300 rounded-lg">
+                <option value="12kg">12kg</option>
+                <option value="17kg">17kg</option>
+            </select>
+        </div>
+        <div>
+            <label for="emptyQty" class="block font-semibold mb-2">Empty Quantity:</label>
+            <input type="number" id="emptyQty" placeholder="12kg or 17kg Empty Qty" class="w-full p-3 border border-gray-300 rounded-lg" required>
+        </div>
+    </div>
+
+    <!-- Third Row: SRG, Adapter, Stove, Lighter, Hose -->
+    <div class="grid grid-cols-5 gap-4 mt-6">
+        <div>
+            <label for="srg" class="block font-semibold mb-2">SRG:</label>
+            <input type="number" id="srg" placeholder="SRG Qty" class="w-full p-3 border border-gray-300 rounded-lg">
+        </div>
+        <div>
+            <label for="adap" class="block font-semibold mb-2">Adapter:</label>
+            <input type="number" id="adap" placeholder="Adapter Qty" class="w-full p-3 border border-gray-300 rounded-lg">
+        </div>
+        <div>
+            <label for="stove" class="block font-semibold mb-2">Stove:</label>
+            <input type="number" id="stove" placeholder="Stove Qty" class="w-full p-3 border border-gray-300 rounded-lg">
+        </div>
+        <div>
+            <label for="lighter" class="block font-semibold mb-2">Lighter:</label>
+            <input type="number" id="lighter" placeholder="Lighter Qty" class="w-full p-3 border border-gray-300 rounded-lg">
+        </div>
+        <div>
+            <label for="hose" class="block font-semibold mb-2">Hose:</label>
+            <input type="number" id="hose" placeholder="Hose Qty" class="w-full p-3 border border-gray-300 rounded-lg">
+        </div>
+    </div>
+
+    <!-- Fourth Row: Total Amount, Deposit, Amount Paid, Amount OD -->
+    <div class="grid grid-cols-2 gap-4 mt-6">
+        <div>
+            <label for="totalAmount" class="block font-semibold mb-2">Total Amount:</label>
+            <input type="number" id="totalAmount" placeholder="Total Amount" class="w-full p-3 border border-gray-300 rounded-lg" oninput="calculateOD()" required>
+        </div>
+        <div>
+            <label for="deposit" class="block font-semibold mb-2">Deposit:</label>
+            <input type="number" id="deposit" placeholder="Deposit" class="w-full p-3 border border-gray-300 rounded-lg">
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mt-6">
+        <div>
+            <label for="amountPaid" class="block font-semibold mb-2">Amount Paid:</label>
+            <input type="number" id="amountPaid" placeholder="Amount Paid" class="w-full p-3 border border-gray-300 rounded-lg" oninput="calculateOD()" required>
+        </div>
+        <div>
+            <label for="amountOD" class="block font-semibold mb-2">Amount OD:</label>
+            <input type="number" id="amountOD" placeholder="Amount OD" class="w-full p-3 border border-gray-300 rounded-lg" readonly>
+        </div>
+    </div>
+
+    <!-- 3D Button -->
+    <div class="text-center mt-8">
+        <button type="submit" class="btn-3d">Submit</button>
+    </div>
+</div>
+
+<script>
+    function calculateOD() {
+        var totalAmount = parseFloat(document.getElementById('totalAmount').value) || 0;
+        var amountPaid = parseFloat(document.getElementById('amountPaid').value) || 0;
+        var amountOD = totalAmount - amountPaid;
+        document.getElementById('amountOD').value = amountOD.toFixed(2);
+    }
+</script>
+
+</body>
+</html>

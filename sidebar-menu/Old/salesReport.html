@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report</title>
+    <style>
+        .hidden {
+            display: none;
+        }
+
+        .visible {
+            display: block;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            margin: 0 5px;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Report Filter Form (Initial Page) -->
+<div id="filterForm" class="visible">
+    <h2>Datewise Sales Report</h2>
+    <form id="reportForm">
+        <!-- Date Inputs -->
+        <label for="fromDate">From Date:</label>
+        <input type="date" id="fromDate" required>
+        <label for="toDate">To Date:</label>
+        <input type="date" id="toDate" required>
+
+        <!-- Report Type Dropdown -->
+        <label for="reportType">Report Type:</label>
+        <select id="reportType">
+            <option value="old">Old</option>
+            <option value="new">New</option>
+        </select>
+
+        <!-- Get Report Button -->
+        <button type="button" onclick="getReport()">Get Report</button>
+    </form>
+</div>
+
+<!-- Report Data Table (Shown after clicking "Get Report") -->
+<div id="reportSection" class="hidden">
+    <h2>Sales Report</h2>
+    <!-- Report Actions (CSV, Excel, PDF, Print) -->
+    <div class="report-actions">
+        <button class="btn" onclick="exportReportToCSV()">Export CSV</button>
+        <button class="btn" onclick="exportReportToExcel()">Export Excel</button>
+        <button class="btn" onclick="exportReportToPDF()">Export PDF</button>
+        <button class="btn" onclick="printReport()">Print</button>
+    </div>
+
+    <!-- Search and Pagination Controls -->
+    <input type="text" id="search" placeholder="Search...">
+
+    <!-- Sales Report Table -->
+    <table id="reportTable">
+        <thead>
+        <tr>
+            <th>Invoice #</th>
+            <th>HSN #</th>
+            <th>Date</th>
+            <th>Code</th>
+            <th>Name</th>
+            <th>GST #</th>
+            <th>Prd</th>
+            <th>Rate</th>
+            <th>Qty</th>
+            <th>Gross</th>
+            <th>GST5</th>
+            <th>GST12</th>
+            <th>Net</th>
+        </tr>
+        </thead>
+        <tbody id="tableBody">
+        <!-- Table data will be inserted dynamically -->
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        <button onclick="prevPage()">Previous</button>
+        <span id="pageNumber">1</span>
+        <button onclick="nextPage()">Next</button>
+    </div>
+</div>
+
+<script src="/salesScript.js"></script>
+
+
+</body>
+</html>

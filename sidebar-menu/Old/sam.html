@@ -1,0 +1,146 @@
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <h3>Covai Traders</h3>
+  </div>
+
+  <ul class="list-unstyled components">
+    <li>
+      <a href="index.html">
+        <img src="home-icon.svg" alt="Home icon" />
+        Home
+      </a>
+    </li>
+    <li>
+      <a href="dashboard.html">
+        <img src="dashboard-icon.svg" alt="Dashboard icon" />
+        Dashboard
+      </a>
+    </li>
+    <li class="active">
+      <a href="#salesSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+        <img src="sales-icon.svg" alt="Sales icon" />
+        Sales
+      </a>
+      <ul class="collapse list-unstyled" id="salesSubmenu">
+        <li>
+          <a href="salesEntry.html">Sales Entry</a>
+        </li>
+        <li>
+          <a href="#">Outstanding</a>
+        </li>
+        <li>
+          <a href="salesList.html">Sales List</a>
+        </li>
+        <li>
+          <a href="salesReport.html">Sales Report</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="#purchaseSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+        <img src="purchase-icon.svg" alt="Purchase icon" />
+        Purchase
+      </a>
+      <ul class="collapse list-unstyled" id="purchaseSubmenu">
+        <li>
+          <a href="purchaseEntry.html">Purchase Entry</a>
+        </li>
+        <li>
+          <a href="purchaseList.html">Purchase List</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="calendar.html">
+        <img src="calendar-icon.svg" alt="Calendar icon" />
+        Calendar
+      </a>
+    </li>
+    <li>
+      <a href="security.html">
+        <img src="security-icon.svg" alt="Security icon" />
+        Security
+      </a>
+    </li>
+    <li>
+      <a href="logout.html">
+        <img src="logout-icon.svg" alt="Logout icon" />
+        Logout
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var dropdowns = document.querySelectorAll('.dropdown-toggle');
+  dropdowns.forEach(function(dropdown) {
+    dropdown.addEventListener('click', function(e) {
+      e.preventDefault();
+      this.parentElement.classList.toggle('active');
+      var submenu = this.nextElementSibling;
+      if (submenu.style.display === 'block') {
+        submenu.style.display = 'none';
+      } else {
+        submenu.style.display = 'block';
+      }
+    });
+  });
+});
+</script>
+
+<style>
+#sidebar {
+  min-width: 250px;
+  max-width: 250px;
+  background: #343a40;
+  color: #fff;
+  transition: all 0.3s;
+}
+
+#sidebar .sidebar-header {
+  padding: 20px;
+  background: #2c3135;
+}
+
+#sidebar ul.components {
+  padding: 20px 0;
+}
+
+#sidebar ul p {
+  color: #fff;
+  padding: 10px;
+}
+
+#sidebar ul li a {
+  padding: 10px;
+  font-size: 1.1em;
+  display: block;
+  color: #fff;
+  text-decoration: none;
+}
+
+#sidebar ul li a:hover {
+  color: #343a40;
+  background: #fff;
+}
+
+#sidebar ul li.active > a, a[aria-expanded="true"] {
+  color: #fff;
+  background: #4b545c;
+}
+
+#sidebar ul ul a {
+  font-size: 0.9em !important;
+  padding-left: 30px !important;
+  background: #4b545c;
+}
+
+.dropdown-toggle::after {
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+}
+</style>

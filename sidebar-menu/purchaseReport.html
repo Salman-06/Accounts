@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        .button-3d {
+            transition: all 0.2s ease;
+            box-shadow: 0px 4px 0px #2980b9;
+        }
+        .button-3d:active {
+            box-shadow: 0 0 #2980b9;
+            transform: translateY(4px);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div id="page1" class="container mx-auto p-8">
+        <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+            <h1 class="text-3xl font-bold text-center mb-6">Datewise Purchase Report</h1>
+            <div class="flex justify-center space-x-4">
+                <div>
+                    <label for="fromDate" class="block text-sm font-medium text-gray-700">From Date:</label>
+                    <input type="date" id="fromDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+                <div>
+                    <label for="toDate" class="block text-sm font-medium text-gray-700">To Date:</label>
+                    <input type="date" id="toDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+            </div>
+            <div class="mt-6 text-center">
+                <button onclick="getReport()" class="button-3d bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                    Get Report
+                </button>
+                <button id="homeButton" class="button-3d bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+            Home</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="page2" class="container mx-auto p-8 hidden">
+        <h2 class="text-2xl font-bold mb-4">Purchase Report</h2>
+        <div class="mb-4 flex justify-between items-center">
+            <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search by bill number..." class="p-2 border rounded">
+
+            <div class="space-x-2">
+                <button onclick="exportToExcel()" class="button-3d bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded">Excel</button>
+                <button onclick="exportToPDF()" class="button-3d bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">PDF</button>
+                <button onclick="window.print()" class="button-3d bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Print</button>
+                <button id="homeButton" class="button-3d bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                    Home</button>     
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table id="purchaseTable" class="min-w-full bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-2 px-4 border">#</th>
+                        <th class="py-2 px-4 border">Purchase Date</th>
+                        <th class="py-2 px-4 border">Purchase Bill</th>
+                        <th class="py-2 px-4 border">12kg Load</th>
+                        <th class="py-2 px-4 border">12kg Given</th>
+                        <th class="py-2 px-4 border">17kg Load</th>
+                        <th class="py-2 px-4 border">17kg Given</th>
+                        <th class="py-2 px-4 border">12kg Amount</th>
+                        <th class="py-2 px-4 border">17kg Amount</th>
+                        <th class="py-2 px-4 border">Total Purchase Value</th>
+                    </tr>
+                </thead>
+                <tbody id="purchaseTableBody">
+                    <!-- Data will be populated here -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="py-2 px-4 border font-bold">Total</td>
+                        <td id="total12kgLoad" class="py-2 px-4 border"></td>
+                        <td id="total12kgGiven" class="py-2 px-4 border"></td>
+                        <td id="total17kgLoad" class="py-2 px-4 border"></td>
+                        <td id="total17kgGiven" class="py-2 px-4 border"></td>
+                        <td id="total12kgAmount" class="py-2 px-4 border"></td>
+                        <td id="total17kgAmount" class="py-2 px-4 border"></td>
+                        <td id="totalPurchaseValue" class="py-2 px-4 border"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="mt-4 flex justify-center space-x-4">
+            <button onclick="changePage(-1)" class="button-3d bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Previous</button>
+            <span id="currentPage" class="py-2 px-4 bg-gray-200 rounded">1</span>
+            <button onclick="changePage(1)" class="button-3d bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Next</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let allPurchases = [];
+
+        function getReport() {
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+
+            if (!fromDate || !toDate) {
+                alert('Please select both From Date and To Date');
+                return;
+            }
+
+            // Fetch data from server based on date range
+            fetch(`get_purchase_report.php?fromDate=${fromDate}&toDate=${toDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    allPurchases = data;
+                    renderTable();
+                    updateTotals();
+                    document.getElementById('page1').classList.add('hidden');
+                    document.getElementById('page2').classList.remove('hidden');
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        
+        // Function to format the date to DD-MM-YYYY
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        let day = ("0" + date.getDate()).slice(-2);
+        let month = ("0" + (date.getMonth() + 1)).slice(-2);
+        let year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+    }
+
+    // Function to create a clickable link in the Purchase column
+    function createPurchaseLink(purchaseValue) {
+        return `<a href="#" class="purchase-link">${purchaseValue}</a>`;
+    }
+
+    // Example function to populate the table with data
+    function populateTable(data) {
+        const tableBody = document.getElementById('yourTableId').getElementsByTagName('tbody')[0];
+        tableBody.innerHTML = ''; // Clear previous rows
+
+        data.forEach(row => {
+            const newRow = tableBody.insertRow();
+            const dateCell = newRow.insertCell(0);
+            const purchaseCell = newRow.insertCell(1);
+
+            dateCell.innerHTML = formatDate(row.date); // Format the date
+            purchaseCell.innerHTML = createPurchaseLink(row.purchase); // Make Purchase a link
+        });
+    }
+
+    // Add an event listener to handle the sorting when clicking the Purchase link
+    let sortedDescending = true;
+
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('purchase-link')) {
+            const table = document.getElementById('yourTableId');
+            const rows = Array.from(table.querySelectorAll('tbody tr')); // Get table rows
+
+            // Sort rows based on the date column (assuming date is in column 0)
+            rows.sort((rowA, rowB) => {
+                const dateA = new Date(rowA.cells[0].innerText);
+                const dateB = new Date(rowB.cells[0].innerText);
+                return sortedDescending ? dateB - dateA : dateA - dateB;
+            });
+
+            sortedDescending = !sortedDescending; // Toggle for next click
+
+            // Append sorted rows back into the table body
+            const tbody = table.querySelector('tbody');
+            rows.forEach(row => tbody.appendChild(row));
+        }
+    });
+    
+    function renderTable() {
+    const tableBody = document.getElementById('purchaseTableBody');
+    tableBody.innerHTML = '';
+
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const pageData = allPurchases.slice(start, end);
+
+    pageData.forEach((purchase, index) => {
+        const row = tableBody.insertRow();
+        row.innerHTML = `
+            <td class="py-2 px-4 border"><a href="purchaseDetails.php?id=${index + 1}">${index + 1}</a></td>
+            <td class="py-2 px-4 border">${purchase.purchase_date}</td>
+            <td class="py-2 px-4 border">${purchase.purchase_bill}</td>
+            <td class="py-2 px-4 border">${purchase.item_details}</td>
+            <td class="py-2 px-4 border">${purchase.given12kg}</td>
+            <td class="py-2 px-4 border">${purchase.load17kg}</td>
+            <td class="py-2 px-4 border">${purchase.given17kg}</td>
+            <td class="py-2 px-4 border">${purchase.amount12kg}</td>
+            <td class="py-2 px-4 border">${purchase.amount17kg}</td>
+            <td class="py-2 px-4 border">${purchase.total_purchase_value}</td>
+        `;
+    });
+}
+
+    function updateTotals() {
+            const totals = allPurchases.reduce((acc, purchase) => {
+                acc.load12kg += parseInt(purchase.item_details);
+                acc.given12kg += parseInt(purchase.given12kg);
+                acc.load17kg += parseInt(purchase.load17kg);
+                acc.given17kg += parseInt(purchase.given17kg);
+                acc.amount12kg += parseFloat(purchase.amount12kg);
+                acc.amount17kg += parseFloat(purchase.amount17kg);
+                acc.totalValue += parseFloat(purchase.total_purchase_value);
+                return acc;
+            }, { load12kg: 0, given12kg: 0, load17kg: 0, given17kg: 0, amount12kg: 0, amount17kg: 0, totalValue: 0 });
+
+            document.getElementById('total12kgLoad').textContent = totals.load12kg;
+            document.getElementById('total12kgGiven').textContent = totals.given12kg;
+            document.getElementById('total17kgLoad').textContent = totals.load17kg;
+            document.getElementById('total17kgGiven').textContent = totals.given17kg;
+            document.getElementById('total12kgAmount').textContent = totals.amount12kg.toFixed(2);
+            document.getElementById('total17kgAmount').textContent = totals.amount17kg.toFixed(2);
+            document.getElementById('totalPurchaseValue').textContent = totals.totalValue.toFixed(2);
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(allPurchases.length / rowsPerPage);
+            currentPage += direction;
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            document.getElementById('currentPage').textContent = currentPage;
+            renderTable();
+        }
+
+        function searchTable() {
+    const input = document.getElementById('searchInput').value.toUpperCase();
+
+    // Filter purchases based on the 'purchase_bill' field
+    const filteredPurchases = allPurchases.filter(purchase => 
+        purchase.purchase_bill && purchase.purchase_bill.toUpperCase().includes(input)
+    );
+
+    // Render the filtered data
+    renderFilteredTable(filteredPurchases);
+
+    // Recalculate and update totals for filtered data
+    updateTotalsSearch(filteredPurchases);
+}
+
+function renderFilteredTable(filteredData) {
+    const tableBody = document.getElementById('purchaseTableBody');
+    tableBody.innerHTML = ''; // Clear the existing table rows
+
+    // Iterate through the filtered data and populate the table
+    filteredData.forEach((purchase, index) => {
+        const row = tableBody.insertRow();
+        row.innerHTML = `
+            <td class="py-2 px-4 border"><a href="purchaseDetails.php?id=${index + 1}">${index + 1}</a></td>
+            <td class="py-2 px-4 border">${purchase.purchase_date}</td>
+            <td class="py-2 px-4 border">${purchase.purchase_bill}</td>
+            <td class="py-2 px-4 border">${purchase.item_details}</td>
+            <td class="py-2 px-4 border">${purchase.given12kg}</td>
+            <td class="py-2 px-4 border">${purchase.load17kg}</td>
+            <td class="py-2 px-4 border">${purchase.given17kg}</td>
+            <td class="py-2 px-4 border">${purchase.amount12kg}</td>
+            <td class="py-2 px-4 border">${purchase.amount17kg}</td>
+            <td class="py-2 px-4 border">${purchase.total_purchase_value}</td>
+        `;
+    });
+}
+
+function updateTotalsSearch(filteredPurchases) {
+    // Calculate totals for filtered data
+    const totals = filteredPurchases.reduce((acc, purchase) => {
+        acc.item_details += parseInt(purchase.item_details || 0);
+        acc.given12kg += parseInt(purchase.given12kg || 0);
+        acc.load17kg += parseInt(purchase.load17kg || 0);
+        acc.given17kg += parseInt(purchase.given17kg || 0);
+        acc.amount12kg += parseFloat(purchase.amount12kg || 0);
+        acc.amount17kg += parseFloat(purchase.amount17kg || 0);
+        acc.total_purchase_value += parseFloat(purchase.total_purchase_value || 0);
+        return acc;
+    }, { item_details: 0, given12kg: 0, load17kg: 0, given17kg: 0, amount12kg: 0, amount17kg: 0, total_purchase_value: 0 });
+
+    // Update total row in the table
+    document.getElementById('total12kgLoad').textContent = totals.item_details;
+    document.getElementById('total12kgGiven').textContent = totals.given12kg;
+    document.getElementById('total17kgLoad').textContent = totals.load17kg;
+    document.getElementById('total17kgGiven').textContent = totals.given17kg;
+    document.getElementById('total12kgAmount').textContent = totals.amount12kg.toFixed(2);
+    document.getElementById('total17kgAmount').textContent = totals.amount17kg.toFixed(2);
+    document.getElementById('totalPurchaseValue').textContent = totals.total_purchase_value.toFixed(2);
+}
+
+function exportToExcel() {
+    const fromDate = document.getElementById('fromDate').value;
+    const toDate = document.getElementById('toDate').value;
+
+    if (!fromDate || !toDate) {
+        alert('Please select both From Date and To Date');
+        return;
+    }
+
+    // Fetch data for the selected range
+    fetch(`get_purchase_report.php?fromDate=${fromDate}&toDate=${toDate}`)
+        .then(response => response.json())
+        .then(data => {
+            // Calculate totals
+            const totals = data.reduce((acc, purchase) => {
+                acc.item_details += parseInt(purchase.item_details);
+                acc.given12kg += parseInt(purchase.given12kg);
+                acc.load17kg += parseInt(purchase.load17kg);
+                acc.given17kg += parseInt(purchase.given17kg);
+                acc.amount12kg += parseFloat(purchase.amount12kg);
+                acc.amount17kg += parseFloat(purchase.amount17kg);
+                acc.total_purchase_value += parseFloat(purchase.total_purchase_value);
+                return acc;
+            }, { item_details: 0, given12kg: 0, load17kg: 0, given17kg: 0, amount12kg: 0, amount17kg: 0, total_purchase_value: 0 });
+
+            // Add the total row to the data
+            data.push({
+                purchase_date: 'Total',
+                purchase_bill: '',
+                item_details: totals.item_details,
+                given12kg: totals.given12kg,
+                load17kg: totals.load17kg,
+                given17kg: totals.given17kg,
+                amount12kg: totals.amount12kg.toFixed(2),
+                amount17kg: totals.amount17kg.toFixed(2),
+                total_purchase_value: totals.total_purchase_value.toFixed(2),
+            });
+
+            // Convert JSON data to Excel format
+            let worksheet = XLSX.utils.json_to_sheet(data);
+
+            // Create a new workbook
+            let workbook = XLSX.utils.book_new();
+
+            // Append the worksheet to the workbook
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Purchase Report");
+
+            // Export the workbook to Excel file
+            XLSX.writeFile(workbook, `purchase_report_${fromDate}_to_${toDate}.xlsx`);
+        })
+        .catch(error => console.error('Error exporting to Excel:', error));
+}
+
+function exportToPDF() {
+    const fromDate = document.getElementById('fromDate').value;
+    const toDate = document.getElementById('toDate').value;
+
+    fetch(`get_purchase_report.php?fromDate=${fromDate}&toDate=${toDate}`)
+        .then(response => response.json())
+        .then(data => {
+            // Calculate totals
+            const totals = data.reduce((acc, purchase) => {
+                acc.item_details += parseInt(purchase.item_details);
+                acc.given12kg += parseInt(purchase.given12kg);
+                acc.load17kg += parseInt(purchase.load17kg);
+                acc.given17kg += parseInt(purchase.given17kg);
+                acc.amount12kg += parseFloat(purchase.amount12kg);
+                acc.amount17kg += parseFloat(purchase.amount17kg);
+                acc.total_purchase_value += parseFloat(purchase.total_purchase_value);
+                return acc;
+            }, { item_details: 0, given12kg: 0, load17kg: 0, given17kg: 0, amount12kg: 0, amount17kg: 0, total_purchase_value: 0 });
+
+            // Add the total row to the data
+            const tableData = data.map((row, index) => [
+                index + 1, row.purchase_bill, row.item_details, row.given12kg, row.load17kg, 
+                row.given17kg, row.amount12kg, row.amount17kg, row.total_purchase_value
+            ]);
+
+            tableData.push([
+                'Total', '', totals.item_details, totals.given12kg, totals.load17kg, 
+                totals.given17kg, totals.amount12kg.toFixed(2), totals.amount17kg.toFixed(2), totals.total_purchase_value.toFixed(2)
+            ]);
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.autoTable({
+                head: [['#', 'Purchase Bill', '12kg Load', '12kg Given', '17kg Load', '17kg Given', '12kg Amount', '17kg Amount', 'Total Purchase Value']],
+                body: tableData,
+            });
+
+            doc.save(`purchase_report_${fromDate}_to_${toDate}.pdf`);
+        })
+        .catch(error => console.error('Error exporting to PDF:', error));
+}
+</script>
+</body>
+</html>
